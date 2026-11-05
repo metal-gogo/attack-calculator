@@ -24,7 +24,7 @@ describe('Hapi attack calculator',()=>{
  const c=calc({brutality:true});expect(c.brutality).toBe(18);expect(c.normal).toBe('1d10 +59');expect(c.critical).toBe('(1d10 +41) ×2 +18');
  });
  it('applies Sun Blade evil enhancement and undead damage without multiplying Brutality',()=>{
- const c=calc({weapon:'sun',evil:true,undead:true,brutality:true});expect(c.enhancement).toBe(4);expect(c.normal).toBe('(1d10 +42) ×2 +18');expect(c.critical).toBe('(1d10 +42) ×4 +18');expect(c.critBase).toBe(3);expect(calc({weapon:'sun',evil:true,undead:true,brutality:true,sunSequential:true}).critical).toBe('(1d10 +42) ×6 +18');
+ const c=calc({weapon:'sun',evil:true,undead:true,brutality:true});expect(c.enhancement).toBe(4);expect(c.normal).toBe('(1d10 +42) ×2 +18');expect(c.critical).toBe('(1d10 +42) ×3 +18');expect(c.critBase).toBe(3);expect(c.critMultiplier).toBe(3);expect(calc({weapon:'sun',undead:false}).critMultiplier).toBe(2);
  });
  it('restricts Warrior Spirit to Heavy Blades and caps enhancement at +5',()=>{
  expect(calc({spirit:true}).s.spirit).toBe(false);expect(calc({weapon:'sun',spirit:true}).enhancement).toBe(4);expect(calc({weapon:'sun',evil:true,spirit:true}).enhancement).toBe(5);

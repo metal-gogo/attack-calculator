@@ -20,8 +20,8 @@ export function normalize(input:State):State {
  s.drBypass=s.drBypass.slice(0,180);
  s.resistanceNotes=s.resistanceNotes.slice(0,500);
  s.immunityNotes=s.immunityNotes.slice(0,500);
- s.damageTaken=Math.max(0,Math.trunc(s.damageTaken));
- s.tempHP=Math.max(0,Math.trunc(s.tempHP));
+ s.damageTaken=Math.min(99999,Math.max(0,Math.trunc(s.damageTaken)));
+ s.tempHP=Math.min(9999,Math.max(0,Math.trunc(s.tempHP)));
  // Raging Vitality is a permanent feat: its effect always accompanies Bloodrage.
  s.vitality=s.rage;
  for(const key of ['armorSpecialization','bootsUses','gogglesUses','talismanUses'] as const)s[key]=Math.max(0,Math.trunc(s[key]));

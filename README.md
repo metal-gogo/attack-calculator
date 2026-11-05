@@ -72,3 +72,10 @@ The latest confirmed AC breakdown supersedes the earlier +4 DEX cap: 10 base +11
 
 
 Current AC applies the selected flat-footed condition; normal AC is shown separately for comparison. The flat-footed checkbox manually removes positive DEX/dodge even though Hapi has Uncanny Dodge; a reminder explains that the player should leave it off when the ability applies. Checking it drops base AC from 36 to 31, touch AC from 20 to 15, and CMD from 49 to 44. Baseline CMD is 10 +20 BAB +9 STR +5 DEX +5 deflection =49; Bloodrage plus Reckless Abandon produces47. Armor maximum DEX never limits CMD. Current CMD sources are shown next to the total.
+
+
+## Party HP tracker
+
+The party tracker keeps a linked Hapi card plus editable allies. Add members with a name and maximum HP, correct current/temporary HP directly, or use per-member Damage and Heal controls. Damage consumes temporary HP first; healing caps at maximum HP without restoring temporary HP. Maximum-HP edits preserve damage taken, and negative HP is supported without inventing another character’s death threshold. Removing an ally offers Undo.
+
+Hapi uses the same HP damage and temporary HP as the Defense section, with Constitution and Bloodrage changing maximum/current HP together. Other party members are saved separately under `hapi-party-v1` in browser local storage; combat Reset does not change their HP. The tracker is not a live shared multiplayer session. Stabilization, nonlethal damage, and character-specific exceptions remain table-managed. Arithmetic and persisted-record validation are pure functions in `src/party.ts`.

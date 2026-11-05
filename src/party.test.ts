@@ -1,0 +1,18 @@
+import {describe,it,expect} from 'vitest';
+import {currentHP,decodeParty,healDamage,hpStatus,PartyMember,setCurrentHP,takeDamage} from './party';
+const member:PartyMember={id:'ally',name:'Ally',maxHP:100,damageTaken:20,tempHP:10};
+describe('party HP tracking',()=>{
+ it('consumes temporary HP before recording ordinary damage',()=>{const next=takeDamage(member,25);expect(next.tempHP).toBe(0);expect(next.damageTaken).toBe(35);expect(currentHP(next)).toBe(65);expect(member.damageTaken).toBe(20);});
+ it('absorbs a hit entirely with temporary HP',()=>{expect(takeDamage(member,7)).toEqual({...member,tempHP:3});});
+ it('supports negative current HP and healing back above zero',()=>{const hurt=takeDamage({...member,tempHP:0},90);expect(currentHP(hurt)).toBe(-10);expect(currentHP(healDamage(hurt,15))).toBe(5);});
+ it('caps healing at maximum without restoring temporary HP',()=>{const next=healDamage(member,100);expect(currentHP(next)).toBe(100);expect(next.tempHP).toBe(10);});
+ it('preserves damage when the maximum changes',()=>{expect(currentHP({...member,maxHP:120})).toBe(100);expect(currentHP({...member,maxHP:10})).toBe(-10);});
+ it('allows direct HP corrections while preventing over-maximum healing',()=>{expect(setCurrentHP(member,110).damageTaken).toBe(0);expect(setCurrentHP(member,-5).damageTaken).toBe(105);});
+ it('ignores negative amounts and handles nonfinite damage safely',()=>{expect(takeDamage(member,-10)).toEqual(member);expect(healDamage(member,-10)).toEqual(member);expect(takeDamage(member,NaN)).toEqual(member);});
+ it('bounds cumulative damage so persisted values do not change on reload',()=>{const d=takeDamage({...member,damageTaken:99990,tempHP:0},100);expect(d.damageTaken).toBe(99999);expect(decodeParty(JSON.stringify({version:1,members:[d]}))[0]).toEqual(d);expect(setCurrentHP(member,-99999).damageTaken).toBe(99999);});
+ it('reports HP bands without inventing death thresholds for unknown allies',()=>{expect(hpStatus(member)).toBe('Wounded');expect(hpStatus({...member,damageTaken:0})).toBe('Full HP');expect(hpStatus({...member,damageTaken:50})).toBe('Low HP');expect(hpStatus({...member,damageTaken:100})).toBe('At zero');expect(hpStatus({...member,damageTaken:101})).toBe('Below zero');});
+ it('roundtrips persisted member identities and HP',()=>{expect(decodeParty(JSON.stringify({version:1,members:[member]}))).toEqual([member]);});
+ it('rejects malformed data and unsupported schemas',()=>{expect(decodeParty(null)).toEqual([]);expect(()=>decodeParty('{broken')).toThrow();expect(()=>decodeParty(JSON.stringify({version:2,members:[]}))).toThrow();});
+ it('preserves valid records while filtering invalid or duplicated identities',()=>{const invalid=[null,{...member,id:'hapi'},{...member,id:'bad',maxHP:'100'},member,member];expect(decodeParty(JSON.stringify({version:1,members:invalid}))).toEqual([member]);});
+ it('clamps persisted HP values and names to supported bounds',()=>{const [m]=decodeParty(JSON.stringify({version:1,members:[{...member,name:'  Ally  ',maxHP:-1,damageTaken:-3,tempHP:100000}]}));expect(m.name).toBe('Ally');expect(m.maxHP).toBe(1);expect(m.damageTaken).toBe(0);expect(m.tempHP).toBe(9999);});
+});

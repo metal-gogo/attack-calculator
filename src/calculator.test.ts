@@ -26,8 +26,8 @@ describe('Hapi attack calculator',()=>{
  it('applies Sun Blade evil enhancement and undead damage without multiplying Brutality',()=>{
  const c=calc({weapon:'sun',evil:true,undead:true,brutality:true});expect(c.enhancement).toBe(4);expect(c.normal).toBe('(1d10 +42) ×2 +18');expect(c.critical).toBe('(1d10 +42) ×3 +18');expect(c.critBase).toBe(3);expect(c.critMultiplier).toBe(3);expect(calc({weapon:'sun',undead:false}).critMultiplier).toBe(2);
  });
- it('restricts Warrior Spirit to Heavy Blades and caps enhancement at +5',()=>{
- expect(calc({spirit:true}).s.spirit).toBe(false);expect(calc({weapon:'sun',spirit:true}).enhancement).toBe(4);expect(calc({weapon:'sun',evil:true,spirit:true}).enhancement).toBe(5);
+ it('applies Warrior Spirit only to the heavy flail, capped at +5',()=>{
+ const active=calc({spirit:true});expect(active.s.spirit).toBe(true);expect(active.enhancement).toBe(5);expect(active.single).toBe(42);expect(active.normal).toBe('1d10 +43');expect(active.w.training).toBe(0);expect(calc({spirit:true,spiritBonus:1}).enhancement).toBe(4);expect(calc({spirit:true,evil:true}).enhancement).toBe(5);expect(calc({weapon:'sun',spirit:true}).s.spirit).toBe(false);expect(calc({weapon:'sun',evil:true,spirit:true}).enhancement).toBe(4);expect(calc({weapon:'dagger',spirit:true}).s.spirit).toBe(false);
  });
  it('replaces normal flanking with Outflank and conditions Bond on flanking',()=>{
  expect(calc({flanking:true}).single).toBe(42);expect(calc({flanking:true,outflank:true}).single).toBe(44);expect(calc({flanking:true,outflank:true,bond:true}).single).toBe(46);expect(calc({flanking:true,bond:true}).single).toBe(44);expect(calc({bond:true}).single).toBe(40);

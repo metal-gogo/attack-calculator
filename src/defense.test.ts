@@ -12,7 +12,7 @@ describe('equipment-derived defenses',()=>{
   const d=defense({rage:true,tempHP:12,damageTaken:50});expect(d.maxHP).toBe(331);expect(d.currentHP).toBe(281);expect(d.tempHP).toBe(12);expect([d.fortitude,d.reflex,d.will,d.fear]).toEqual([30,16,18,20]);expect(defense({damageTaken:260}).currentHP).toBe(-9);
  });
  it('calculates normal, touch and flat-footed AC from equipment, not provisional 36',()=>{
-  const d=defense();expect(d.verified).toBe(true);expect(d.ac).toBe(36);expect(d.touch).toBe(20);expect(d.flatFooted).toBe(36);expect(d.cmd).toBe(49);expect(d.acParts.filter(([source])=>source.includes('Full Plate')).map(([,value])=>value)).toEqual([11,2]);
+  const d=defense();expect(d.verified).toBe(true);expect(d.ac).toBe(36);expect(d.touch).toBe(20);expect(d.flatFooted).toBe(31);expect(d.cmd).toBe(49);expect(d.acParts.filter(([source])=>source.includes('Full Plate')).map(([,value])=>value)).toEqual([11,2]);
  });
  it('gates shield AC by equipped state and the active weapon grip',()=>{
   expect(defense().shieldBonus).toBe(0);expect(defense({weapon:'sun'}).shieldBonus).toBe(0);expect(defense({weapon:'dagger'}).shieldBonus).toBe(3);expect(defense({weapon:'dagger'}).ac).toBe(39);expect(defense({weapon:'dagger',shieldEquipped:false}).ac).toBe(36);expect(defense({weapon:'sun',sunTwoHanded:false}).ac).toBe(39);
@@ -22,6 +22,9 @@ describe('equipment-derived defenses',()=>{
  });
  it('never adds armor, shield or natural armor to touch AC or CMD',()=>{
   const a=defense({weapon:'dagger'}),b=defense({weapon:'dagger',armor:20,armorSpecialization:4,shield:10,naturalArmor:12});expect(a.touch).toBe(b.touch);expect(a.cmd).toBe(b.cmd);expect(b.ac-a.ac).toBe(27);
+ });
+ it('uses full Dexterity for CMD, including when the armor cap is lower',()=>{
+ const baseline=defense({maxDex:4});expect(baseline.cmd).toBe(49);expect(baseline.cmdParts.find(([source])=>source.startsWith('Dexterity'))?.[1]).toBe(5);expect(defense({rage:true,reckless:true}).activeCMD).toBe(47);
  });
  it('enforces maximum DEX for AC/touch, but not Reflex/CMD',()=>{
   const d=defense({maxDex:2});expect(d.ac).toBe(33);expect(d.touch).toBe(17);expect(d.reflex).toBe(16);expect(d.cmd).toBe(49);
@@ -35,8 +38,11 @@ describe('equipment-derived defenses',()=>{
  it('applies rage, Reckless Abandon and Charge AC penalties to CMD',()=>{
   const d=defense({rage:true,reckless:true,charge:true});expect(d.ac).toBe(29);expect(d.cmd).toBe(45);
  });
- it('retains DEX/dodge with Uncanny Dodge and removes them when absent',()=>{
-  const d=defense({haste:true,dodge:2});expect(d.flatFooted).toBe(d.ac);const e=defense({haste:true,dodge:2,uncannyDodge:false,flatFooted:true});expect(e.flatFooted).toBe(31);expect(e.flatCMD).toBe(44);expect(e.reflex).toBe(16);
+ it('removes DEX and dodge from flat-footed values regardless of Uncanny Dodge',()=>{
+  const d=defense({haste:true,dodge:2});expect(d.flatFooted).toBe(31);const e=defense({haste:true,dodge:2,uncannyDodge:false,flatFooted:true});expect(e.flatFooted).toBe(31);expect(e.flatCMD).toBe(44);expect(e.reflex).toBe(16);
+ });
+ it('makes flat-footed a manual DEX-denial override with Uncanny Dodge as reference only',()=>{
+ const normal=defense();for(const uncannyDodge of [true,false]){const flat=defense({flatFooted:true,uncannyDodge});expect(normal.activeAC).toBe(36);expect(flat.activeAC).toBe(31);expect(flat.activeTouch).toBe(15);expect(flat.activeCMD).toBe(44);expect(flat.ac).toBe(36);expect(flat.activeCMDParts.reduce((n,[,v])=>n+v,0)).toBe(44);}
  });
  it('sustains rage while unconscious and disables actions',()=>{
   const c=calculate({...defaults,vitality:false,unconscious:true,haste:true});expect(c.s.rage).toBe(true);expect(c.s.vitality).toBe(true);expect(c.defense.maxHP).toBe(331);expect(c.defense.reflex).toBe(6);expect(c.aoos).toBe(0);

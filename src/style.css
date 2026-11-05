@@ -19,3 +19,4 @@
 .grip-select{margin-top:18px}
 .damage-card>strong{overflow-wrap:anywhere;font-size:clamp(23px,2.25vw,32px);line-height:1.5}@media(max-width:600px){.damage-card>strong{font-size:25px}}
 .calculator-grid>*{min-width:0}.grip-select{min-width:0}.grip-select select{width:100%;max-width:100%}@media(max-width:850px){.calculator-grid{grid-template-columns:minmax(0,1fr)}}
+.cmd-explanation{border:1px solid #58718f;border-radius:6px;padding:0 14px;margin-top:14px}.cmd-explanation>summary{min-height:48px;gap:12px;font-size:14px;color:#d8eaff}.cmd-explanation .defense-sources{margin:0 0 12px}

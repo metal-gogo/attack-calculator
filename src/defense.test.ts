@@ -12,10 +12,10 @@ describe('equipment-derived defenses',()=>{
   const d=defense({rage:true,tempHP:12,damageTaken:50});expect(d.maxHP).toBe(331);expect(d.currentHP).toBe(281);expect(d.tempHP).toBe(12);expect([d.fortitude,d.reflex,d.will,d.fear]).toEqual([30,16,18,20]);expect(defense({damageTaken:260}).currentHP).toBe(-9);
  });
  it('calculates normal, touch and flat-footed AC from equipment, not provisional 36',()=>{
-  const d=defense();expect(d.verified).toBe(true);expect(d.ac).toBe(35);expect(d.touch).toBe(19);expect(d.flatFooted).toBe(35);expect(d.cmd).toBe(49);expect(d.acParts.filter(([source])=>source.includes('Full Plate')).map(([,value])=>value)).toEqual([11,2]);
+  const d=defense();expect(d.verified).toBe(true);expect(d.ac).toBe(36);expect(d.touch).toBe(20);expect(d.flatFooted).toBe(36);expect(d.cmd).toBe(49);expect(d.acParts.filter(([source])=>source.includes('Full Plate')).map(([,value])=>value)).toEqual([11,2]);
  });
  it('gates shield AC by equipped state and the active weapon grip',()=>{
-  expect(defense().shieldBonus).toBe(0);expect(defense({weapon:'sun'}).shieldBonus).toBe(0);expect(defense({weapon:'dagger'}).shieldBonus).toBe(3);expect(defense({weapon:'dagger'}).ac).toBe(38);expect(defense({weapon:'dagger',shieldEquipped:false}).ac).toBe(35);expect(defense({weapon:'sun',sunTwoHanded:false}).ac).toBe(38);
+  expect(defense().shieldBonus).toBe(0);expect(defense({weapon:'sun'}).shieldBonus).toBe(0);expect(defense({weapon:'dagger'}).shieldBonus).toBe(3);expect(defense({weapon:'dagger'}).ac).toBe(39);expect(defense({weapon:'dagger',shieldEquipped:false}).ac).toBe(36);expect(defense({weapon:'sun',sunTwoHanded:false}).ac).toBe(39);
  });
  it('synchronizes one-handed Sun Blade attacks, damage and shield use',()=>{
   const c=calculate({...defaults,weapon:'sun',sunTwoHanded:false});expect(c.w.hands).toBe(1);expect(c.furious).toBe(false);expect(c.normal).toBe('1d10 +28');expect(c.defense.shieldBonus).toBe(3);expect(c.fullAttack[0]).toBe(33);
@@ -30,10 +30,10 @@ describe('equipment-derived defenses',()=>{
   const d=defense({enlarge:true});expect(d.maxHP).toBe(251);expect(d.ac).toBe(34);expect(d.touch).toBe(18);expect(d.cmd).toBe(50);expect(d.reflex).toBe(15);
  });
  it('stacks Haste dodge bonuses but not competing morale Will bonuses',()=>{
-  const d=defense({rage:true,heroism:true,haste:true});expect([d.fortitude,d.reflex,d.will,d.fear]).toEqual([32,19,18,20]);expect(d.ac).toBe(34);expect(d.cmd).toBe(51);expect(defense({heroism:true}).will).toBe(17);
+  const d=defense({rage:true,heroism:true,haste:true});expect([d.fortitude,d.reflex,d.will,d.fear]).toEqual([32,19,18,20]);expect(d.ac).toBe(35);expect(d.cmd).toBe(51);expect(defense({heroism:true}).will).toBe(17);
  });
  it('applies rage, Reckless Abandon and Charge AC penalties to CMD',()=>{
-  const d=defense({rage:true,reckless:true,charge:true});expect(d.ac).toBe(28);expect(d.cmd).toBe(45);
+  const d=defense({rage:true,reckless:true,charge:true});expect(d.ac).toBe(29);expect(d.cmd).toBe(45);
  });
  it('retains DEX/dodge with Uncanny Dodge and removes them when absent',()=>{
   const d=defense({haste:true,dodge:2});expect(d.flatFooted).toBe(d.ac);const e=defense({haste:true,dodge:2,uncannyDodge:false,flatFooted:true});expect(e.flatFooted).toBe(31);expect(e.flatCMD).toBe(44);expect(e.reflex).toBe(16);
@@ -48,7 +48,7 @@ describe('equipment-derived defenses',()=>{
   expect(defense().will).toBe(15);expect(defense({allySpell:true}).will).toBe(17);expect(defense({allySpell:true,bloodSanctuary:false}).will).toBe(15);
  });
  it('does not invent AC bonuses from Improved Uncanny Dodge or the ring',()=>{
-  const d=defense({abilityDamage:8,abilityDrain:4,abilityPenalty:5,damageTaken:20});expect(d.innerFortitude).toEqual({damage:2,drain:1,penalty:0});expect(d.currentHP).toBe(231);expect(d.ac).toBe(35);expect(defense({improvedUncannyDodge:false}).ac).toBe(d.ac);expect(defense({innerFortitude:false,abilityDamage:8}).innerFortitude.damage).toBe(8);
+  const d=defense({abilityDamage:8,abilityDrain:4,abilityPenalty:5,damageTaken:20});expect(d.innerFortitude).toEqual({damage:2,drain:1,penalty:0});expect(d.currentHP).toBe(231);expect(d.ac).toBe(36);expect(defense({improvedUncannyDodge:false}).ac).toBe(d.ac);expect(defense({innerFortitude:false,abilityDamage:8}).innerFortitude.damage).toBe(8);
  });
  it('shares confirmed additional Seraphel CON across HP, Fortitude and Brutality',()=>{
   const c=calculate({...defaults,seraphelExtra:true,brutality:true});expect(c.con).toBe(36);expect(c.defense.maxHP).toBe(351);expect(c.defense.fortitude).toBe(31);expect(c.defense.deathThreshold).toBe(-36);expect(c.brutality).toBe(19);
@@ -72,7 +72,7 @@ describe('equipment-derived defenses',()=>{
   for(let mask=0;mask<64;mask++){
    const [rage,reckless,enlarge,haste,heroism,charge]=Array.from({length:6},(_,i)=>Boolean(mask&(1<<i)));
    const r=calculate({...defaults,rage,reckless,enlarge,haste,heroism,charge}),d=r.defense;
-   expect(d.maxHP).toBe(251+(rage?80:0));expect(d.fortitude).toBe(26+(rage?4:0)+(heroism?2:0));expect(d.reflex).toBe(16-(enlarge?1:0)+(haste?1:0)+(heroism?2:0));expect(d.will).toBe(15+Math.max(rage?3:0,heroism?2:0));expect(d.ac).toBe(35-(enlarge?1:0)+(haste?1:0)-(rage?2:0)-(r.s.reckless?3:0)-(charge?2:0));
+   expect(d.maxHP).toBe(251+(rage?80:0));expect(d.fortitude).toBe(26+(rage?4:0)+(heroism?2:0));expect(d.reflex).toBe(16-(enlarge?1:0)+(haste?1:0)+(heroism?2:0));expect(d.will).toBe(15+Math.max(rage?3:0,heroism?2:0));expect(d.ac).toBe(36-(enlarge?2:0)+(haste?1:0)-(rage?2:0)-(r.s.reckless?3:0)-(charge?2:0));
   }
  });
 });

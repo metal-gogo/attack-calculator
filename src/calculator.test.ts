@@ -3,7 +3,7 @@ import {calculate,defaults,normalize,summary,State} from './calculator';
 const calc=(changes:Partial<State>={})=>calculate({...defaults,...changes});
 describe('Hapi attack calculator',()=>{
  it('calculates the raging heavy flail and first-attack Furious Focus',()=>{
- const c=calc();expect(c.fullAttack).toEqual([40,29,24,19]);expect(c.aoo).toBe(34);expect(c.normal).toBe('1d10 +41');expect(c.critical).toBe('(1d10 +41) ×2');expect(c.ac).toBe(30);expect(c.cmd).toBe(47);
+ const c=calc();expect(c.fullAttack).toEqual([40,29,24,19]);expect(c.aoo).toBe(34);expect(c.normal).toBe('1d10 +41');expect(c.critical).toBe('(1d10 +41) ×2');expect(c.ac).toBe(31);expect(c.cmd).toBe(47);
  });
  it('uses the actual first attack only for Furious Focus with Haste',()=>{
  const c=calc({haste:true});expect(c.fullAttack).toEqual([41,35,30,25,20]);
@@ -33,7 +33,7 @@ describe('Hapi attack calculator',()=>{
  expect(calc({flanking:true}).single).toBe(42);expect(calc({flanking:true,outflank:true}).single).toBe(44);expect(calc({flanking:true,outflank:true,bond:true}).single).toBe(46);expect(calc({flanking:true,bond:true}).single).toBe(44);expect(calc({bond:true}).single).toBe(40);
  });
  it('limits charge to the single attack and Paired Opportunists to AoO',()=>{
- const c=calc({charge:true,paired:true});expect(c.single).toBe(42);expect(c.fullAttack).toEqual(calc().fullAttack);expect(c.aoo).toBe(38);expect(c.ac).toBe(28);expect(c.cmd).toBe(45);
+ const c=calc({charge:true,paired:true});expect(c.single).toBe(42);expect(c.fullAttack).toEqual(calc().fullAttack);expect(c.aoo).toBe(38);expect(c.ac).toBe(29);expect(c.cmd).toBe(45);
  });
  it('separates armor from CMD and accounts for dexterity Combat Reflexes',()=>{
  const c=calc({armor:12,otherAC:2,otherCMD:3,provisionalAC:false,naturalArmor:0,armorSpecialization:0,maxDex:99});expect(c.ac).toBe(29);expect(c.cmd).toBe(50);expect(c.aoos).toBe(6);expect(calc({enlarge:true}).aoos).toBe(5);

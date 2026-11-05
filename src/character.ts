@@ -11,7 +11,7 @@ export const equipment = {cloakResistance:5,ringDeflection:5,greaterInnerFortitu
 
 // Sheet equipment records. Ability items are included in confirmed totals by default.
 export const defensiveEquipment = {
- armor:{name:'Radiant Mithral Full Plate +2',armor:11,specialization:2,maxDex:4,checkPenalty:-2},
+ armor:{name:'Radiant Mithral Full Plate +2',armor:11,specialization:2,maxDex:5,checkPenalty:-2},
  shield:{name:'Mithral Heavy Shield +1',bonus:3,weight:7.5},
  amulet:{name:'Amulet of Natural Armor +3',bonus:3},
  belt:{name:'Belt of Physical Perfection +6',bonus:6},

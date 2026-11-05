@@ -18,7 +18,7 @@ describe('equipment-derived defenses',()=>{
   expect(defense().shieldBonus).toBe(0);expect(defense({weapon:'sun'}).shieldBonus).toBe(0);expect(defense({weapon:'dagger'}).shieldBonus).toBe(3);expect(defense({weapon:'dagger'}).ac).toBe(39);expect(defense({weapon:'dagger',shieldEquipped:false}).ac).toBe(36);expect(defense({weapon:'sun',sunTwoHanded:false}).ac).toBe(39);
  });
  it('synchronizes one-handed Sun Blade attacks, damage and shield use',()=>{
-  const c=calculate({...defaults,weapon:'sun',sunTwoHanded:false});expect(c.w.hands).toBe(1);expect(c.furious).toBe(false);expect(c.normal).toBe('1d10 +28');expect(c.defense.shieldBonus).toBe(3);expect(c.fullAttack[0]).toBe(33);
+  const c=calculate({...defaults,weapon:'sun',sunTwoHanded:false});expect(c.w.hands).toBe(1);expect(c.furious).toBe(false);expect(c.normal).toBe('1d10 +28');expect(c.defense.shieldBonus).toBe(3);expect(c.fullAttack[0]).toBe(32);
  });
  it('never adds armor, shield or natural armor to touch AC or CMD',()=>{
   const a=defense({weapon:'dagger'}),b=defense({weapon:'dagger',armor:20,armorSpecialization:4,shield:10,naturalArmor:12});expect(a.touch).toBe(b.touch);expect(a.cmd).toBe(b.cmd);expect(b.ac-a.ac).toBe(27);

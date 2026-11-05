@@ -85,3 +85,10 @@ Nonlethal damage has its own persisted counter for each party member, defaulting
 
 
 Party health labels use **Bloodied** at half HP or below, **Dying** for negative HP above the death threshold, and **Dead** at HP ≤ −Constitution. Dying uses bright red; Dead uses deep purple, with readable text labels. Constitution is required when adding a member and editable on their card; older records retain HP and prompt for missing CON rather than inventing a score. Hapi’s Constitution and death threshold follow combat effects automatically. Ally CON changes the death threshold only (maximum HP stays manually controlled). Negative HP assumes unstabilized dying; stabilization and exceptions remain table-managed. Nonlethal unconsciousness is separate and does not mark a positive-HP character as Dying. Ordinary Heal is disabled for Dead characters; revival or record correction requires a manual HP change.
+
+
+## Sun Blade alignment penalty
+
+Hapi is confirmed evil-aligned. While the Sun Blade is selected, he automatically gains **one negative level**: −1 on attacks (including Haste and AoOs), saving throws, CMB/CMD, skill checks and ability checks; −5 current and maximum HP. The condition cannot be suppressed or removed, including by restoration, while the sword is wielded. Switching to another weapon removes it automatically; damage taken stays unchanged. Wielder alignment is separate from the target’s evil trait.
+
+Ability scores, AC, weapon damage and the base attack progression are not directly reduced. Actual character level remains 20 for Constitution-derived HP; effective level is 19 for applicable level-dependent variables. The UI/summary notes CMB, skills, ability checks, and effective level because those systems are otherwise not calculated here. Hapi’s Defense and linked party HP include the penalty. Alignment defaults to the confirmed evil value, with an explicit wielder setting for later character changes.

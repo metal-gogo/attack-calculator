@@ -47,6 +47,7 @@ describe('equipment-derived defenses',()=>{
  it('sustains rage while unconscious and disables actions',()=>{
   const c=calculate({...defaults,vitality:false,unconscious:true,haste:true});expect(c.s.rage).toBe(true);expect(c.s.vitality).toBe(true);expect(c.defense.maxHP).toBe(331);expect(c.defense.reflex).toBe(6);expect(c.aoos).toBe(0);
  });
+ it('synchronizes nonlethal unconsciousness, staggered, and rage-dependent HP',()=>{const d=defense({nonlethal:252});expect(d.currentHP).toBe(251);expect(d.unconscious).toBe(true);expect(d.reflex).toBe(6);expect(defense({nonlethal:251}).staggered).toBe(true);expect(defense({nonlethal:250}).unconscious).toBe(false);const c=calculate({...defaults,nonlethal:260});expect(c.defense.unconscious).toBe(false);expect(calculate({...defaults,rage:false,nonlethal:260}).aoos).toBe(0);});
  it('handles unconsciousness and Constitution death thresholds',()=>{
   expect(defense({damageTaken:251}).conditions).toContain('Disabled');expect(defense({damageTaken:252}).unconscious).toBe(true);expect(defense({damageTaken:276}).dead).toBe(false);expect(defense({damageTaken:277}).dead).toBe(true);expect(defense({rage:true,damageTaken:364}).dead).toBe(false);expect(defense({rage:true,damageTaken:365}).dead).toBe(true);
  });

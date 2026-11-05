@@ -8,7 +8,8 @@ export function calculateDefense(s:State, abilities:{strength:number;dexterity:n
  const hpParts:Modifier[]=[['Base HP (includes CON 26)',character.baseHP],['Constitution change × character level',(constitution-baselineConMod)*character.level]];
  const maxHP=sum(hpParts),currentHP=maxHP-s.damageTaken;
  const dead=currentHP<=-con;
- const unconscious=s.unconscious||currentHP<0;
+ const unconscious=s.unconscious||currentHP<0||s.nonlethal>currentHP;
+ const staggered=!unconscious&&currentHP>0&&s.nonlethal===currentHP;
  const saveDex=unconscious?-5:dexterity;
  const dexAC=unconscious?-5:Math.min(dexterity,s.maxDex);
  const penalties:Modifier[]=[['Greater Bloodrage',s.rage?-2:0],['Reckless Abandon',s.reckless?-3:0],['Charge',s.charge?-2:0]];
@@ -36,8 +37,8 @@ export function calculateDefense(s:State, abilities:{strength:number;dexterity:n
  const fearParts:Modifier[]=[...saveParts.will,['Bravery (fear only)',character.bravery]];
  const flatCMDParts=flatAdjust(cmdParts);
  const flatCMD=sum(flatCMDParts);
- const conditions=[...(s.rage?['Bloodraging','Raging Vitality (automatic)','Darkvision while Bloodraging']:[]),...(s.bootsActive?['Flying (Winged Boots; track duration)']:[]),...(s.reckless?['Reckless Abandon']:[]),...(s.enlarge?['Enlarged']:[]),...(s.haste?['Hasted']:[]),...(s.heroism?['Heroism']:[]),...(s.charge?['Charging']:[]),...(s.flatFooted?['Flat-footed']:[]),...(dead?['Dead']:unconscious?['Unconscious / helpless']:currentHP===0?['Disabled']:[])];
- return {shieldActive,shieldBonus,hpParts,maxHP,currentHP,tempHP:s.tempHP,deathThreshold:-con,dead,unconscious,conditions,
+ const conditions=[...(s.rage?['Bloodraging','Raging Vitality (automatic)','Darkvision while Bloodraging']:[]),...(s.bootsActive?['Flying (Winged Boots; track duration)']:[]),...(s.reckless?['Reckless Abandon']:[]),...(s.enlarge?['Enlarged']:[]),...(s.haste?['Hasted']:[]),...(s.heroism?['Heroism']:[]),...(s.charge?['Charging']:[]),...(s.flatFooted?['Flat-footed']:[]),...(staggered?['Staggered (nonlethal equals current HP)']:[]),...(dead?['Dead']:unconscious?['Unconscious / helpless']:currentHP===0?['Disabled']:[])];
+ return {shieldActive,shieldBonus,hpParts,maxHP,currentHP,tempHP:s.tempHP,nonlethal:s.nonlethal,staggered,deathThreshold:-con,dead,unconscious,conditions,
   acParts,touchParts,flatParts,flatTouchParts,activeTouchParts:s.flatFooted?flatTouchParts:touchParts,activeTouch:s.flatFooted?sum(flatTouchParts):sum(touchParts),cmdParts,ac:sum(acParts),touch:sum(touchParts),flatFooted:sum(flatParts),cmd:sum(cmdParts),
   activeAC:s.flatFooted?sum(flatParts):sum(acParts),saveParts,fearParts,fortitude,reflex,will,fear:sum(fearParts),
   flatCMDParts,activeCMDParts:s.flatFooted?flatCMDParts:cmdParts,flatCMD,activeCMD:s.flatFooted?flatCMD:sum(cmdParts),

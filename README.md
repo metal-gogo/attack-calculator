@@ -4,7 +4,7 @@ A responsive React + TypeScript + Tailwind application. Combat settings persist 
 
 ## Development
 
-Use Node.js 22 or newer and npm.
+Use Node.js 24 LTS and npm. The `.nvmrc` file is shared with GitHub Actions; if you use nvm, run `nvm install && nvm use` before installing dependencies.
 
 ```sh
 npm ci

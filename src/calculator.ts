@@ -55,7 +55,9 @@ export function calculate(input:State){
  const undeadSun=s.weapon==='sun'&&s.undead, normalMultiplier=undeadSun?2:1,critBase=undeadSun?3:2;
  const critMultiplier=undeadSun?(s.sunSequential?6:4):critBase;
  const die=s.enlarge?w.large:w.die;
- const expression=(mult:number)=>`${Number(die.split('d')[0])*mult}d${die.split('d')[1]} ${signed(flat*mult+brutality)}`;
+ const expression=(mult:number)=>mult===1
+  ? `${die} ${signed(flat+brutality)}`
+  : `(${die} ${signed(flat)}) ×${mult}${brutality?` ${signed(brutality)}`:''}`;
  const defense=calculateDefense(s,{strength,dexterity,constitution,con,wis});
  const {acParts}=defense;
  const cmd=defense.activeCMD;
@@ -74,4 +76,4 @@ export function calculate(input:State){
  if(s.undead&&s.weapon==='flail')warnings.push('Disruption: qualifying undead struck must make a DC 14 Will save or be destroyed. Confirm eligibility and immunity with your GM.');
  return {defense,s,w,str,dex,con,wis,strength,dexterity,constitution,enhancement,attackParts,damageParts,acParts,fullAttack,single,aoo,ac,cmd,brutality,normal:expression(normalMultiplier),critical:expression(critMultiplier),critMultiplier,critBase,furious,warnings,aoos:defense.unconscious?0:1+Math.max(0,dexterity)};
 }
-export function summary(s:State){const c=calculate(s);return `Hapi — ${c.w.name}\nFull attack: ${c.fullAttack.map(signed).join(' / ')}\nSingle${s.charge?' charge':''}: ${signed(c.single)}; AoO: ${signed(c.aoo)}\nDamage: ${c.normal}; critical ${c.w.threat}–20/×${c.critBase}: ${c.critical}\nAC ${c.ac}${c.defense.verified?'':' (provisional / incomplete)'} (touch ${c.defense.verified?c.defense.touch:'unverified'}, flat-footed ${c.defense.verified?c.defense.flatFooted:'unverified'}); CMD ${c.cmd}\nHP ${c.defense.currentHP}/${c.defense.maxHP}; temporary HP ${c.defense.tempHP}; death ${c.defense.deathThreshold}\nFort ${signed(c.defense.fortitude)}; Ref ${signed(c.defense.reflex)}; Will ${signed(c.defense.will)}; fear ${signed(c.defense.fear)}\nActive: ${(Object.keys(toggleLabels) as Toggle[]).filter(k=>c.s[k]).map(k=>toggleLabels[k]).join(', ')}\nDamage before DR ${s.dr} and incorporeal reductions. Raging Brutality added once; first qualifying attack uses Furious Focus.\n${c.warnings.join('\n')}`;}
+export function summary(s:State){const c=calculate(s);return `Hapi — ${c.w.name}\nFull attack: ${c.fullAttack.map(signed).join(' / ')}\nSingle${s.charge?' charge':''}: ${signed(c.single)}; AoO: ${signed(c.aoo)}\nDamage: ${c.normal}; critical ${c.w.threat}–20/×${c.critBase}: ${c.critical}\nAC ${c.ac}${c.defense.verified?'':' (provisional / incomplete)'} (touch ${c.defense.verified?c.defense.touch:'unverified'}, flat-footed ${c.defense.verified?c.defense.flatFooted:'unverified'}); CMD ${c.cmd}\nHP ${c.defense.currentHP}/${c.defense.maxHP}; temporary HP ${c.defense.tempHP}; death ${c.defense.deathThreshold}\nFort ${signed(c.defense.fortitude)}; Ref ${signed(c.defense.reflex)}; Will ${signed(c.defense.will)}; fear ${signed(c.defense.fear)}\nActive: ${(Object.keys(toggleLabels) as Toggle[]).filter(k=>c.s[k]).map(k=>toggleLabels[k]).join(', ')}\nTable rule: roll damage once, then multiply; Raging Brutality is added afterward.\nDamage before DR ${s.dr} and incorporeal reductions. Raging Brutality added once; first qualifying attack uses Furious Focus.\n${c.warnings.join('\n')}`;}

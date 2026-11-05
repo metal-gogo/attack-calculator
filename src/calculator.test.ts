@@ -3,7 +3,7 @@ import {calculate,defaults,normalize,summary,State} from './calculator';
 const calc=(changes:Partial<State>={})=>calculate({...defaults,...changes});
 describe('Hapi attack calculator',()=>{
  it('calculates the raging heavy flail and first-attack Furious Focus',()=>{
- const c=calc();expect(c.fullAttack).toEqual([40,29,24,19]);expect(c.aoo).toBe(34);expect(c.normal).toBe('1d10 +41');expect(c.critical).toBe('2d10 +82');expect(c.ac).toBe(30);expect(c.cmd).toBe(47);
+ const c=calc();expect(c.fullAttack).toEqual([40,29,24,19]);expect(c.aoo).toBe(34);expect(c.normal).toBe('1d10 +41');expect(c.critical).toBe('(1d10 +41) ×2');expect(c.ac).toBe(30);expect(c.cmd).toBe(47);
  });
  it('uses the actual first attack only for Furious Focus with Haste',()=>{
  const c=calc({haste:true});expect(c.fullAttack).toEqual([41,35,30,25,20]);
@@ -21,10 +21,10 @@ describe('Hapi attack calculator',()=>{
  expect(normalize({...defaults,rage:false,brutality:true}).brutality).toBe(false);expect(normalize({...defaults,power:false,brutality:true}).brutality).toBe(false);expect(calc({rage:false}).con).toBe(26);
  });
  it('adds Raging Brutality once to normal and critical damage',()=>{
- const c=calc({brutality:true});expect(c.brutality).toBe(18);expect(c.normal).toBe('1d10 +59');expect(c.critical).toBe('2d10 +100');
+ const c=calc({brutality:true});expect(c.brutality).toBe(18);expect(c.normal).toBe('1d10 +59');expect(c.critical).toBe('(1d10 +41) ×2 +18');
  });
  it('applies Sun Blade evil enhancement and undead damage without multiplying Brutality',()=>{
- const c=calc({weapon:'sun',evil:true,undead:true,brutality:true});expect(c.enhancement).toBe(4);expect(c.normal).toBe('2d10 +102');expect(c.critical).toBe('4d10 +186');expect(c.critBase).toBe(3);expect(calc({weapon:'sun',evil:true,undead:true,brutality:true,sunSequential:true}).critical).toBe('6d10 +270');
+ const c=calc({weapon:'sun',evil:true,undead:true,brutality:true});expect(c.enhancement).toBe(4);expect(c.normal).toBe('(1d10 +42) ×2 +18');expect(c.critical).toBe('(1d10 +42) ×4 +18');expect(c.critBase).toBe(3);expect(calc({weapon:'sun',evil:true,undead:true,brutality:true,sunSequential:true}).critical).toBe('(1d10 +42) ×6 +18');
  });
  it('restricts Warrior Spirit to Heavy Blades and caps enhancement at +5',()=>{
  expect(calc({spirit:true}).s.spirit).toBe(false);expect(calc({weapon:'sun',spirit:true}).enhancement).toBe(4);expect(calc({weapon:'sun',evil:true,spirit:true}).enhancement).toBe(5);
@@ -37,6 +37,9 @@ describe('Hapi attack calculator',()=>{
  });
  it('separates armor from CMD and accounts for dexterity Combat Reflexes',()=>{
  const c=calc({armor:12,otherAC:2,otherCMD:3,provisionalAC:false,naturalArmor:0,armorSpecialization:0,maxDex:99});expect(c.ac).toBe(29);expect(c.cmd).toBe(50);expect(c.aoos).toBe(6);expect(calc({enlarge:true}).aoos).toBe(5);
+ });
+ it('retains larger weapon dice inside the multiplier and copies the table rule',()=>{
+ const c=calc({enlarge:true,brutality:true});expect(c.critical).toBe('(2d8 +42) ×2 +18');expect(summary({...defaults,enlarge:true,brutality:true})).toContain('(2d8 +42) ×2 +18');expect(summary(defaults)).toContain('roll damage once, then multiply');
  });
  it('includes configurable Bane in attack and damage',()=>{
  const c=calc({bane:true,baneBonus:3});expect(c.single).toBe(43);expect(c.normal).toBe('1d10 +44');

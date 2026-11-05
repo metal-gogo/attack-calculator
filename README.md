@@ -61,3 +61,8 @@ The user confirmed STR 28, DEX 20, CON 26, and WIS 18 **already include** the Be
 Winged Boots have 3 daily uses and a manual active-flight marker (up to 5 minutes/use). Lesser Goggles of True Seeing have 1 recorded use/day; Talisman of Life’s Breath has 2 recorded uses/charges with exact item rules unverified. Counters persist and combat Reset preserves them. Restore uses manually only when the actual item permits. Talisman use never automatically heals or prevents death. Mythallar Token’s recorded skill bonuses do not modify defenses. Leaf Green Faith Bond’s recorded sleep immunity is included while equipped; other properties remain unverified. Darkvision while Bloodraging is displayed without inventing a range or source.
 
 Mithral full plate counts as medium for movement and certain restrictions, but still requires heavy-armor proficiency under Pathfinder rules (which Fighter grants). The supplied maximum DEX +4 and armor check penalty −2 are recorded as given; verify armor training and equipment sources rather than adding those bonuses again. Greater Ring of Inner Fortitude reduces ability damage/drain, never ordinary HP damage. Ring interactions with a beneficial effect’s ability penalty remain flagged for GM adjudication.
+
+
+## Table damage rule
+
+Multiplied damage uses a single weapon damage roll multiplied by the applicable multiplier, e.g. `(1d10 +41) ×2`, rather than additional critical dice. This applies to criticals and Sun Blade undead doubling, including the selected critical stacking ruling. Raging Brutality remains outside the multiplier: `(1d10 +41) ×2 +18`. Enlarge Person still changes the base weapon dice (e.g. `2d8`) before multiplication. The same expressions appear in the copied summary.

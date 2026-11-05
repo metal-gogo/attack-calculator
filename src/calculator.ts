@@ -3,8 +3,8 @@ import {calculateDefense} from './defense';
 import {sunBladeNegativeLevels} from './effects';
 export {character} from './character';
 export const weapons = {
- flail:{name:'Heavy Flail',subtitle:'+3 · Disruption',die:'1d10',large:'2d8',enhancement:3,focus:2,specialization:2,training:0,threat:17,hands:2},
- sun:{name:'Sun Blade',subtitle:'+2 · Heavy blades',die:'1d10',large:'2d8',enhancement:2,focus:0,specialization:0,training:2,threat:19,hands:2},
+ flail:{name:'Heavy Flail',subtitle:'+3 · Disruption',die:'1d10',large:'2d8',enhancement:3,focus:2,specialization:2,training:character.training,threat:17,hands:2},
+ sun:{name:'Sun Blade',subtitle:'+2 · Good-aligned',die:'1d10',large:'2d8',enhancement:2,focus:0,specialization:0,training:0,threat:19,hands:2},
  dagger:{name:'Masterwork Dagger',subtitle:'Masterwork · Light blade',die:'1d4',large:'1d6',enhancement:0,focus:0,specialization:0,training:0,threat:19,hands:1},
 } as const;
 export type Weapon = keyof typeof weapons;
@@ -47,7 +47,7 @@ export function calculate(input:State){
  const strength=mod(str),dexterity=mod(dex),constitution=mod(con);
  const baseEnhancement=w.enhancement+(s.weapon==='sun'&&s.evil?2:0);
  const enhancement=baseEnhancement+(s.spirit?Math.min(s.spiritBonus,Math.max(0,5-baseEnhancement)):0);
- const attackParts:[string,number][]=[['Sun Blade negative level',-negativeLevels],['Strength',strength],['Enhancement / masterwork',s.weapon==='dagger'?1:enhancement],['Weapon Focus + Greater Focus',w.focus],['Heavy Blades training',w.training],['Reckless Abandon',s.reckless?3:0],['Size',s.enlarge?-1:0],['Haste',s.haste?1:0],['Heroism (morale)',s.heroism?2:0],['Charge · charge attack only',s.charge?2:0],['Flanking',s.flanking?(s.outflank?4:2):0],["Freebooter’s Bond · while flanking",s.bond&&s.flanking?2:0],["Freebooter’s Bane",s.bane?s.baneBonus:0]];
+ const attackParts:[string,number][]=[['Sun Blade negative level',-negativeLevels],['Strength',strength],['Enhancement / masterwork',s.weapon==='dagger'?1:enhancement],['Weapon Focus + Greater Focus',w.focus],['Weapon Training (Flails)',w.training],['Reckless Abandon',s.reckless?3:0],['Size',s.enlarge?-1:0],['Haste',s.haste?1:0],['Heroism (morale)',s.heroism?2:0],['Charge · charge attack only',s.charge?2:0],['Flanking',s.flanking?(s.outflank?4:2):0],["Freebooter’s Bond · while flanking",s.bond&&s.flanking?2:0],["Freebooter’s Bane",s.bane?s.baneBonus:0]];
  const base=attackParts.reduce((a,[,v])=>a+v,0), penalty=s.power?-6:0;
  // Furious Focus requires a two-handed weapon or a one-handed weapon wielded in two hands.
  const furious=s.power&&w.hands===2;
@@ -55,7 +55,7 @@ export function calculate(input:State){
  if(s.haste)fullAttack.splice(1,0,20+base+penalty-(s.charge?2:0));
  const single=20+base+(furious?0:penalty);
  const aoo=20+base+penalty-(s.charge?2:0)+(s.paired?4:0);
- const damageParts:[string,number][]=[['Strength',Math.floor(strength*(w.hands===2?1.5:1))],['Enhancement',enhancement],['Weapon Specialization',w.specialization],['Heavy Blades training',w.training],['Power Attack',s.power?(w.hands===2?18:12):0],["Freebooter’s Bane",s.bane?s.baneBonus:0]];
+ const damageParts:[string,number][]=[['Strength',Math.floor(strength*(w.hands===2?1.5:1))],['Enhancement',enhancement],['Weapon Specialization',w.specialization],['Weapon Training (Flails)',w.training],['Power Attack',s.power?(w.hands===2?18:12):0],["Freebooter’s Bane",s.bane?s.baneBonus:0]];
  const flat=damageParts.reduce((a,[,v])=>a+v,0),brutality=s.brutality?Math.floor(constitution*(w.hands===2?1.5:1)):0;
  const undeadSun=s.weapon==='sun'&&s.undead, normalMultiplier=undeadSun?2:1,critBase=undeadSun?3:2;
  const critMultiplier=critBase;
@@ -75,7 +75,7 @@ export function calculate(input:State){
  if(!s.rage&&s.damageTaken>character.baseHP)warnings.push('Ending Bloodrage removes Constitution-derived HP, not temporary HP. Track fatigue and stabilization at the table.');
  if(s.weapon==='dagger'&&s.power)warnings.push('House-rule confirmation: the requested one-handed Power Attack +12 is applied to the dagger. Pathfinder normally excludes light weapons from Power Attack bonus damage; disable Power Attack or confirm this override with your GM.');
 
- if(s.spirit)warnings.push('Warrior Spirit is configured for the heavy flail at this table, with a selected enhancement budget and +5 enhancement ceiling. No permanent flail Weapon Training bonus is assumed. Confirm the flail-group eligibility and budget with your GM; track activation, duration, and daily uses at the table.');
+ if(s.spirit)warnings.push('Warrior Spirit uses the heavy flail’s +2 Flails Weapon Training for its enhancement budget, capped at +5 enhancement total. The permanent +2 training bonus to attack and damage applies separately. Track activation, duration, and daily uses at the table.');
  if(s.bond)warnings.push('Freebooter’s Bond: +2 attack while flanking with the freebooter or another affected ally. The freebooter activates it as a move action; affected allies must be within 30 feet and able to see or hear the freebooter when granted.');
  if(s.bane)warnings.push('Freebooter’s Bane assumes the designated enemy and ally requirements are met; confirm its bonus with your GM.');
  if(s.incorporeal)warnings.push('Incorporeal target: magical attacks normally deal half damage; the nonmagical dagger normally cannot harm it. Ghost touch and other exceptions require GM adjudication. Shown damage is before this reduction.');

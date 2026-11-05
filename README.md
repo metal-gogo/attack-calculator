@@ -20,7 +20,7 @@ Character and weapon data, combat state, and pure calculations are in `src/calcu
 
 ## Rules and assumptions
 
-- Initial toggles are Greater Bloodrage, Raging Vitality, Reckless Abandon, and Power Attack. Armor and shield were not specified and start at zero; enter actual defenses.
+- Initial combat effects are Greater Bloodrage, Reckless Abandon, and Power Attack. Raging Vitality automatically accompanies Bloodrage. Supplied defensive equipment is preconfigured.
 - Charge’s +2 applies only to the displayed single charge attack. Full attacks and AoOs exclude it. Furious Focus waives Power Attack on the first qualifying two-handed attack, including only the first attack when Haste is active.
 - Outflank requires a qualifying ally; Greater Outflank changes positioning eligibility, not the numerical bonus. Paired Opportunists requires adjacency and a qualifying AoO. The displayed AoO count is the per-round Combat Reflexes limit, not automatically granted attacks.
 - Sun Blade uses Heavy Blades training and is wielded in two hands. Confirm proficiency, enhancement, target eligibility, and undead critical stacking with the GM. Undead criticals default to combined ×4; a visible GM option selects sequential ×6. Raging Brutality is added once and never multiplied.
@@ -43,12 +43,21 @@ Default project URL: https://metal-gogo.github.io/attack-calculator/
 
 Permanent character data and equipment are in `src/character.ts`; pure defensive calculations are in `src/defense.ts`. Attack and Defense share the same persisted combat state and ability scores.
 
-Base HP is **251** (corrected): Greater Bloodrage yields 311 HP; with Raging Vitality, 331 HP. Damage taken is preserved when maximum HP changes; Constitution-derived HP is never treated as temporary HP. Temporary HP is separately tracked and consumed first by the damage button. Nonlethal damage, stabilization, and fatigue duration remain table-managed.
+Base HP is **251** (corrected): Greater Bloodrage always includes Raging Vitality and yields **331 HP**. The feat has no separate toggle. Damage taken is preserved when maximum HP changes; Constitution-derived HP is never treated as temporary HP. Temporary HP is separately tracked and consumed first by the damage button. Nonlethal damage, stabilization, and fatigue duration remain table-managed.
 
-Normal AC 36 remains provisional. Touch and flat-footed totals are **not derived from it** and stay hidden until provisional mode is disabled after entering actual armor, shield, natural armor, deflection, dodge, and armor maximum DEX. CMD includes known applicable components (including Ring of Protection +5) but is marked incomplete while equipment is unverified. Armor maximum DEX limits AC/touch AC, not Reflex or CMD. Use “other CMD” for additional verified applicable bonuses; unknown-type “other normal AC” is excluded from touch, flat-footed, and CMD.
+Normal AC is derived from the supplied equipment: full plate +11, Armor Specialization +2, maximum DEX +4, natural armor +3, deflection +5, and shield +3 when equipped and a hand is free. Base AC is **35 without shield / 38 with shield**; base touch AC is **19**. Uncanny Dodge retains DEX when flat-footed. Two-handed flail and two-handed Sun Blade suppress the shield; the dagger and one-handed Sun Blade permit it. Overrides remain available. CMD includes applicable components, not armor, shield or natural armor. Armor maximum DEX limits AC/touch AC, not Reflex or CMD.
 
-Uncanny Dodge retains DEX/dodge when flat-footed; unconsciousness overrides it and treats DEX as zero. Raging Vitality sustains active Bloodrage while unconscious. Without it, unconsciousness ends Bloodrage and removes the associated Constitution HP. Improved Uncanny Dodge provides conditional anti-flanking protection, not a numerical AC bonus. Blood Sanctuary adds +2 only in a qualifying allied/self spell context. Heroism’s +2 morale Will does not stack with Bloodrage’s +3.
+Uncanny Dodge retains DEX/dodge when flat-footed; unconsciousness overrides it and treats DEX as zero. Raging Vitality sustains active Bloodrage while unconscious. Raging Vitality is always active during Bloodrage, including when unconscious; it does not permit actions. Improved Uncanny Dodge provides conditional anti-flanking protection, not a numerical AC bonus. Blood Sanctuary adds +2 only in a qualifying allied/self spell context. Heroism’s +2 morale Will does not stack with Bloodrage’s +3.
 
 Personal DR defaults to Bloodrager 11’s DR 2/— with configurable value/bypass. Resistances and immunities require source-labeled manual confirmation because retained Primalist bloodline powers and equipment were not supplied. No blanket undead immunities are assumed. Greater Ring of Inner Fortitude provides a per-event ability-damage/drain/penalty preview, not a save bonus; select the affected ability and resolve associated beneficial effects (including Enlarge Person) at the table.
 
 The interface uses larger responsive text, high-contrast cool colors, visible keyboard focus, a skip link, native labeled controls, and text labels alongside active-state colors.
+
+
+## Equipment records and confirmation
+
+The user confirmed STR 28, DEX 20, CON 26, and WIS 18 **already include** the Belt of Physical Perfection +6 and Headband of Inspired Wisdom +4. Their bonuses are not added again. Base HP 251 includes the baseline Constitution modifier. Additional Seraphel CON and a consumed Manual’s inherent STR are off by default and require confirmation that they are absent from the supplied totals; these are not assumed active worn effects.
+
+Winged Boots have 3 daily uses and a manual active-flight marker (up to 5 minutes/use). Lesser Goggles of True Seeing have 1 recorded use/day; Talisman of Life’s Breath has 2 recorded uses/charges with exact item rules unverified. Counters persist and combat Reset preserves them. Restore uses manually only when the actual item permits. Talisman use never automatically heals or prevents death. Mythallar Token’s recorded skill bonuses do not modify defenses. Leaf Green Faith Bond’s recorded sleep immunity is included while equipped; other properties remain unverified. Darkvision while Bloodraging is displayed without inventing a range or source.
+
+Mithral full plate counts as medium for movement and certain restrictions, but still requires heavy-armor proficiency under Pathfinder rules (which Fighter grants). The supplied maximum DEX +4 and armor check penalty −2 are recorded as given; verify armor training and equipment sources rather than adding those bonuses again. Greater Ring of Inner Fortitude reduces ability damage/drain, never ordinary HP damage. Ring interactions with a beneficial effect’s ability penalty remain flagged for GM adjudication.

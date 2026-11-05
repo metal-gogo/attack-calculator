@@ -1,4 +1,4 @@
-import {character} from './character';
+import {character,defensiveEquipment} from './character';
 import {calculateDefense} from './defense';
 export {character} from './character';
 export const weapons = {
@@ -7,10 +7,10 @@ export const weapons = {
  dagger:{name:'Masterwork Dagger',subtitle:'Masterwork · Light blade',die:'1d4',large:'1d6',enhancement:0,focus:0,specialization:0,training:0,threat:19,hands:1},
 } as const;
 export type Weapon = keyof typeof weapons;
-export const toggleLabels = {rage:'Greater Bloodrage',vitality:'Raging Vitality',reckless:'Reckless Abandon',power:'Power Attack',brutality:'Raging Brutality',enlarge:'Enlarge Person',haste:'Haste',heroism:'Heroism',charge:'Charge',flanking:'Flanking',outflank:'Outflank',bond:"Freebooter’s Bond",bane:"Freebooter’s Bane",spirit:'Warrior Spirit',paired:'Paired Opportunists'};
+export const toggleLabels = {rage:'Greater Bloodrage',reckless:'Reckless Abandon',power:'Power Attack',brutality:'Raging Brutality',enlarge:'Enlarge Person',haste:'Haste',heroism:'Heroism',charge:'Charge',flanking:'Flanking',outflank:'Outflank',bond:"Freebooter’s Bond",bane:"Freebooter’s Bane",spirit:'Warrior Spirit',paired:'Paired Opportunists'};
 export type Toggle = keyof typeof toggleLabels;
-export type State = Record<Toggle,boolean> & {weapon:Weapon;evil:boolean;undead:boolean;incorporeal:boolean;creature:string;dr:number;drBypassed:boolean;baneBonus:number;spiritBonus:number;armor:number;otherAC:number;otherCMD:number;sunSequential:boolean;damageTaken:number;tempHP:number;provisionalAC:boolean;uncannyDodge:boolean;flatFooted:boolean;unconscious:boolean;resistanceNotes:string;immunityNotes:string;shield:number;naturalArmor:number;deflection:number;dodge:number;ownDR:number;drBypass:string;improvedUncannyDodge:boolean;bloodSanctuary:boolean;allySpell:boolean;innerFortitude:boolean;abilityDamage:number;abilityDrain:number;abilityPenalty:number;maxDex:number};
-export const defaults:State={weapon:'flail',rage:true,vitality:true,reckless:true,power:true,brutality:false,enlarge:false,haste:false,heroism:false,charge:false,flanking:false,outflank:false,bond:false,bane:false,spirit:false,paired:false,evil:false,undead:false,incorporeal:false,creature:'Humanoid',dr:0,drBypassed:false,baneBonus:2,spiritBonus:2,armor:0,otherAC:0,otherCMD:0,sunSequential:false,damageTaken:0,tempHP:0,provisionalAC:true,uncannyDodge:true,flatFooted:false,unconscious:false,resistanceNotes:'',immunityNotes:'',shield:0,naturalArmor:0,deflection:5,dodge:0,ownDR:2,drBypass:'— (not bypassed by weapon material or alignment)',improvedUncannyDodge:true,bloodSanctuary:true,allySpell:false,innerFortitude:true,abilityDamage:0,abilityDrain:0,abilityPenalty:0,maxDex:99};
+export type State = Record<Toggle,boolean> & {vitality:boolean;weapon:Weapon;evil:boolean;undead:boolean;incorporeal:boolean;creature:string;dr:number;drBypassed:boolean;baneBonus:number;spiritBonus:number;armor:number;otherAC:number;otherCMD:number;sunSequential:boolean;damageTaken:number;tempHP:number;provisionalAC:boolean;uncannyDodge:boolean;flatFooted:boolean;unconscious:boolean;resistanceNotes:string;immunityNotes:string;shield:number;naturalArmor:number;deflection:number;dodge:number;ownDR:number;drBypass:string;improvedUncannyDodge:boolean;bloodSanctuary:boolean;allySpell:boolean;innerFortitude:boolean;abilityDamage:number;abilityDrain:number;abilityPenalty:number;maxDex:number;armorSpecialization:number;shieldEquipped:boolean;sunTwoHanded:boolean;manualExtra:boolean;seraphelExtra:boolean;sleepImmunity:boolean;bootsUses:number;bootsActive:boolean;gogglesUses:number;talismanUses:number};
+export const defaults:State={weapon:'flail',rage:true,vitality:true,reckless:true,power:true,brutality:false,enlarge:false,haste:false,heroism:false,charge:false,flanking:false,outflank:false,bond:false,bane:false,spirit:false,paired:false,evil:false,undead:false,incorporeal:false,creature:'Humanoid',dr:0,drBypassed:false,baneBonus:2,spiritBonus:2,armor:defensiveEquipment.armor.armor,otherAC:0,otherCMD:0,sunSequential:false,damageTaken:0,tempHP:0,provisionalAC:false,uncannyDodge:true,flatFooted:false,unconscious:false,resistanceNotes:'',immunityNotes:'',shield:defensiveEquipment.shield.bonus,naturalArmor:defensiveEquipment.amulet.bonus,deflection:5,dodge:0,ownDR:2,drBypass:'— (not bypassed by weapon material or alignment)',improvedUncannyDodge:true,bloodSanctuary:true,allySpell:false,innerFortitude:true,abilityDamage:0,abilityDrain:0,abilityPenalty:0,maxDex:defensiveEquipment.armor.maxDex,armorSpecialization:defensiveEquipment.armor.specialization,shieldEquipped:true,sunTwoHanded:true,manualExtra:false,seraphelExtra:false,sleepImmunity:true,bootsUses:3,bootsActive:false,gogglesUses:1,talismanUses:2};
 export const mod=(n:number)=>Math.floor((n-10)/2);
 export const signed=(n:number)=>`${n>=0?'+':''}${n}`;
 export function normalize(input:State):State {
@@ -22,9 +22,12 @@ export function normalize(input:State):State {
  s.immunityNotes=s.immunityNotes.slice(0,500);
  s.damageTaken=Math.max(0,Math.trunc(s.damageTaken));
  s.tempHP=Math.max(0,Math.trunc(s.tempHP));
- // Bloodrage ends on unconsciousness unless Raging Vitality sustains it.
- const ragingMax=character.baseHP+character.level*((s.rage?3:0)+(s.rage&&s.vitality?1:0));
- if(s.rage&&!s.vitality&&(s.unconscious||s.damageTaken>ragingMax))s.rage=false;
+ // Raging Vitality is a permanent feat: its effect always accompanies Bloodrage.
+ s.vitality=s.rage;
+ for(const key of ['armorSpecialization','bootsUses','gogglesUses','talismanUses'] as const)s[key]=Math.max(0,Math.trunc(s[key]));
+ s.bootsUses=Math.min(defensiveEquipment.boots.uses,s.bootsUses);
+ s.gogglesUses=Math.min(defensiveEquipment.goggles.uses,s.gogglesUses);
+ s.talismanUses=Math.min(defensiveEquipment.talisman.uses,s.talismanUses);
  if(!s.rage){s.vitality=false;s.reckless=false;s.brutality=false;}
  if(!s.power)s.brutality=false;
  if(!s.flanking)s.outflank=false;
@@ -32,8 +35,11 @@ export function normalize(input:State):State {
  return s;
 }
 export function calculate(input:State){
- const s=normalize(input), w=weapons[s.weapon];
- const str=character.str+(s.rage?6:0)+(s.enlarge?2:0),dex=character.dex-(s.enlarge?2:0),con=character.con+(s.rage?6:0)+(s.vitality?2:0);
+ const s=normalize(input);
+ const w={...weapons[s.weapon],hands:s.weapon==='sun'?(s.sunTwoHanded?2:1):weapons[s.weapon].hands};
+ // Confirmed by the user: belt +6 and headband +4 are already included.
+ const str=character.str+(s.manualExtra?3:0)+(s.rage?6:0)+(s.enlarge?2:0),dex=character.dex-(s.enlarge?2:0),con=character.con+(s.seraphelExtra?2:0)+(s.rage?8:0);
+ const wis=character.wis;
  const strength=mod(str),dexterity=mod(dex),constitution=mod(con);
  const enhancement=w.enhancement+(s.weapon==='sun'&&s.evil?2:0)+(s.spirit?Math.min(s.spiritBonus,5-w.enhancement-(s.evil?2:0)):0);
  const attackParts:[string,number][]=[['Strength',strength],['Enhancement / masterwork',s.weapon==='dagger'?1:enhancement],['Weapon Focus + Greater Focus',w.focus],['Heavy Blades training',w.training],['Reckless Abandon',s.reckless?3:0],['Size',s.enlarge?-1:0],['Haste',s.haste?1:0],['Heroism (morale)',s.heroism?2:0],['Charge · charge attack only',s.charge?2:0],['Flanking',s.flanking?(s.outflank?4:2):0],["Freebooter’s Bond · while flanking",s.bond&&s.flanking?3:0],["Freebooter’s Bane",s.bane?s.baneBonus:0]];
@@ -50,7 +56,7 @@ export function calculate(input:State){
  const critMultiplier=undeadSun?(s.sunSequential?6:4):critBase;
  const die=s.enlarge?w.large:w.die;
  const expression=(mult:number)=>`${Number(die.split('d')[0])*mult}d${die.split('d')[1]} ${signed(flat*mult+brutality)}`;
- const defense=calculateDefense(s,{strength,dexterity,constitution,con});
+ const defense=calculateDefense(s,{strength,dexterity,constitution,con,wis});
  const {acParts}=defense;
  const cmd=defense.activeCMD;
  const ac=defense.activeAC;
@@ -66,6 +72,6 @@ export function calculate(input:State){
  if(s.incorporeal)warnings.push('Incorporeal target: magical attacks normally deal half damage; the nonmagical dagger normally cannot harm it. Ghost touch and other exceptions require GM adjudication. Shown damage is before this reduction.');
  if(s.charge)warnings.push('Charge applies +2 only to the single charge attack and −2 AC/CMD. The full-attack sequence and AoO exclude its attack bonus.');
  if(s.undead&&s.weapon==='flail')warnings.push('Disruption: qualifying undead struck must make a DC 14 Will save or be destroyed. Confirm eligibility and immunity with your GM.');
- return {defense,s,w,str,dex,con,strength,dexterity,constitution,enhancement,attackParts,damageParts,acParts,fullAttack,single,aoo,ac,cmd,brutality,normal:expression(normalMultiplier),critical:expression(critMultiplier),critMultiplier,critBase,furious,warnings,aoos:defense.unconscious?0:1+Math.max(0,dexterity)};
+ return {defense,s,w,str,dex,con,wis,strength,dexterity,constitution,enhancement,attackParts,damageParts,acParts,fullAttack,single,aoo,ac,cmd,brutality,normal:expression(normalMultiplier),critical:expression(critMultiplier),critMultiplier,critBase,furious,warnings,aoos:defense.unconscious?0:1+Math.max(0,dexterity)};
 }
 export function summary(s:State){const c=calculate(s);return `Hapi — ${c.w.name}\nFull attack: ${c.fullAttack.map(signed).join(' / ')}\nSingle${s.charge?' charge':''}: ${signed(c.single)}; AoO: ${signed(c.aoo)}\nDamage: ${c.normal}; critical ${c.w.threat}–20/×${c.critBase}: ${c.critical}\nAC ${c.ac}${c.defense.verified?'':' (provisional / incomplete)'} (touch ${c.defense.verified?c.defense.touch:'unverified'}, flat-footed ${c.defense.verified?c.defense.flatFooted:'unverified'}); CMD ${c.cmd}\nHP ${c.defense.currentHP}/${c.defense.maxHP}; temporary HP ${c.defense.tempHP}; death ${c.defense.deathThreshold}\nFort ${signed(c.defense.fortitude)}; Ref ${signed(c.defense.reflex)}; Will ${signed(c.defense.will)}; fear ${signed(c.defense.fear)}\nActive: ${(Object.keys(toggleLabels) as Toggle[]).filter(k=>c.s[k]).map(k=>toggleLabels[k]).join(', ')}\nDamage before DR ${s.dr} and incorporeal reductions. Raging Brutality added once; first qualifying attack uses Furious Focus.\n${c.warnings.join('\n')}`;}

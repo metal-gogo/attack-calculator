@@ -1,4 +1,6 @@
-export const character = { name: 'Hapi', ancestry: 'Human', classes: 'Bloodrager 11 / Fighter 9', bab: [20,15,10,5], str:28, dex:20, con:26, training:2 };
+import {character} from './character';
+import {calculateDefense} from './defense';
+export {character} from './character';
 export const weapons = {
  flail:{name:'Heavy Flail',subtitle:'+3 · Disruption',die:'1d10',large:'2d8',enhancement:3,focus:2,specialization:2,training:0,threat:17,hands:2},
  sun:{name:'Sun Blade',subtitle:'+2 · Heavy blades',die:'1d10',large:'2d8',enhancement:2,focus:0,specialization:0,training:2,threat:19,hands:2},
@@ -7,12 +9,22 @@ export const weapons = {
 export type Weapon = keyof typeof weapons;
 export const toggleLabels = {rage:'Greater Bloodrage',vitality:'Raging Vitality',reckless:'Reckless Abandon',power:'Power Attack',brutality:'Raging Brutality',enlarge:'Enlarge Person',haste:'Haste',heroism:'Heroism',charge:'Charge',flanking:'Flanking',outflank:'Outflank',bond:"Freebooter’s Bond",bane:"Freebooter’s Bane",spirit:'Warrior Spirit',paired:'Paired Opportunists'};
 export type Toggle = keyof typeof toggleLabels;
-export type State = Record<Toggle,boolean> & {weapon:Weapon;evil:boolean;undead:boolean;incorporeal:boolean;creature:string;dr:number;drBypassed:boolean;baneBonus:number;spiritBonus:number;armor:number;otherAC:number;otherCMD:number;sunSequential:boolean};
-export const defaults:State={weapon:'flail',rage:true,vitality:true,reckless:true,power:true,brutality:false,enlarge:false,haste:false,heroism:false,charge:false,flanking:false,outflank:false,bond:false,bane:false,spirit:false,paired:false,evil:false,undead:false,incorporeal:false,creature:'Humanoid',dr:0,drBypassed:false,baneBonus:2,spiritBonus:2,armor:0,otherAC:0,otherCMD:0,sunSequential:false};
+export type State = Record<Toggle,boolean> & {weapon:Weapon;evil:boolean;undead:boolean;incorporeal:boolean;creature:string;dr:number;drBypassed:boolean;baneBonus:number;spiritBonus:number;armor:number;otherAC:number;otherCMD:number;sunSequential:boolean;damageTaken:number;tempHP:number;provisionalAC:boolean;uncannyDodge:boolean;flatFooted:boolean;unconscious:boolean;resistanceNotes:string;immunityNotes:string;shield:number;naturalArmor:number;deflection:number;dodge:number;ownDR:number;drBypass:string;improvedUncannyDodge:boolean;bloodSanctuary:boolean;allySpell:boolean;innerFortitude:boolean;abilityDamage:number;abilityDrain:number;abilityPenalty:number;maxDex:number};
+export const defaults:State={weapon:'flail',rage:true,vitality:true,reckless:true,power:true,brutality:false,enlarge:false,haste:false,heroism:false,charge:false,flanking:false,outflank:false,bond:false,bane:false,spirit:false,paired:false,evil:false,undead:false,incorporeal:false,creature:'Humanoid',dr:0,drBypassed:false,baneBonus:2,spiritBonus:2,armor:0,otherAC:0,otherCMD:0,sunSequential:false,damageTaken:0,tempHP:0,provisionalAC:true,uncannyDodge:true,flatFooted:false,unconscious:false,resistanceNotes:'',immunityNotes:'',shield:0,naturalArmor:0,deflection:5,dodge:0,ownDR:2,drBypass:'— (not bypassed by weapon material or alignment)',improvedUncannyDodge:true,bloodSanctuary:true,allySpell:false,innerFortitude:true,abilityDamage:0,abilityDrain:0,abilityPenalty:0,maxDex:99};
 export const mod=(n:number)=>Math.floor((n-10)/2);
 export const signed=(n:number)=>`${n>=0?'+':''}${n}`;
 export function normalize(input:State):State {
  const s={...input};
+ for(const key of ['armor','shield','naturalArmor','deflection','dodge','ownDR','abilityDamage','abilityDrain','abilityPenalty'] as const)s[key]=Math.max(0,Math.min(1000,Math.trunc(s[key])));
+ s.maxDex=Math.max(0,Math.min(99,Math.trunc(s.maxDex)));
+ s.drBypass=s.drBypass.slice(0,180);
+ s.resistanceNotes=s.resistanceNotes.slice(0,500);
+ s.immunityNotes=s.immunityNotes.slice(0,500);
+ s.damageTaken=Math.max(0,Math.trunc(s.damageTaken));
+ s.tempHP=Math.max(0,Math.trunc(s.tempHP));
+ // Bloodrage ends on unconsciousness unless Raging Vitality sustains it.
+ const ragingMax=character.baseHP+character.level*((s.rage?3:0)+(s.rage&&s.vitality?1:0));
+ if(s.rage&&!s.vitality&&(s.unconscious||s.damageTaken>ragingMax))s.rage=false;
  if(!s.rage){s.vitality=false;s.reckless=false;s.brutality=false;}
  if(!s.power)s.brutality=false;
  if(!s.flanking)s.outflank=false;
@@ -38,10 +50,14 @@ export function calculate(input:State){
  const critMultiplier=undeadSun?(s.sunSequential?6:4):critBase;
  const die=s.enlarge?w.large:w.die;
  const expression=(mult:number)=>`${Number(die.split('d')[0])*mult}d${die.split('d')[1]} ${signed(flat*mult+brutality)}`;
- const acParts:[string,number][]=[['Base',10],['Armor / shield',s.armor],['Dexterity',dexterity],['Size',s.enlarge?-1:0],['Bloodrage',s.rage?-2:0],['Reckless Abandon',s.reckless?-3:0],['Haste (dodge)',s.haste?1:0],['Charge',s.charge?-2:0],['Other AC',s.otherAC]];
- const ac=acParts.reduce((a,[,v])=>a+v,0);
- const cmd=10+20+strength+dexterity+(s.enlarge?1:0)+(s.rage?-2:0)+(s.reckless?-3:0)+(s.haste?1:0)+(s.charge?-2:0)+s.otherCMD;
- const warnings=['Armor, shield, and other defensive bonuses were not supplied. Enter them to obtain a complete AC and CMD.'];
+ const defense=calculateDefense(s,{strength,dexterity,constitution,con});
+ const {acParts}=defense;
+ const cmd=defense.activeCMD;
+ const ac=defense.activeAC;
+ const warnings:string[]=[];
+ if(s.provisionalAC)warnings.push('AC 36 is provisional. Confirm separate armor, shield, natural armor, deflection, and dodge components in Defense. Touch AC, flat-footed AC, and CMD remain unverified until then.');
+ if(defense.unconscious)warnings.push('Hapi is unconscious and helpless: cannot attack or take attacks of opportunity; DEX is treated as 0 for defenses. Melee attackers also gain +4 against a helpless target (not included in displayed AC). Raging Vitality sustains active Bloodrage, not consciousness.');
+ if(!s.rage&&s.damageTaken>character.baseHP)warnings.push('Ending Bloodrage removes Constitution-derived HP, not temporary HP. Track fatigue and stabilization at the table.');
  if(s.weapon==='dagger'&&s.power)warnings.push('House-rule confirmation: the requested one-handed Power Attack +12 is applied to the dagger. Pathfinder normally excludes light weapons from Power Attack bonus damage; disable Power Attack or confirm this override with your GM.');
  if(s.weapon==='sun')warnings.push('GM ruling: Sun Blade doubling and critical multiplication are ambiguous. Default uses combined multipliers (×4 vs undead); sequential ×6 is available below. Raging Brutality is added once in both cases.');
  if(s.spirit)warnings.push('Warrior Spirit: enhancement only; Heavy Blades training +2 supplies a +2 budget, capped at +5 total. Ability requires activation and daily-use tracking at the table.');
@@ -50,6 +66,6 @@ export function calculate(input:State){
  if(s.incorporeal)warnings.push('Incorporeal target: magical attacks normally deal half damage; the nonmagical dagger normally cannot harm it. Ghost touch and other exceptions require GM adjudication. Shown damage is before this reduction.');
  if(s.charge)warnings.push('Charge applies +2 only to the single charge attack and −2 AC/CMD. The full-attack sequence and AoO exclude its attack bonus.');
  if(s.undead&&s.weapon==='flail')warnings.push('Disruption: qualifying undead struck must make a DC 14 Will save or be destroyed. Confirm eligibility and immunity with your GM.');
- return {s,w,str,dex,con,strength,dexterity,constitution,enhancement,attackParts,damageParts,acParts,fullAttack,single,aoo,ac,cmd,brutality,normal:expression(normalMultiplier),critical:expression(critMultiplier),critMultiplier,critBase,furious,warnings,aoos:1+Math.max(0,dexterity)};
+ return {defense,s,w,str,dex,con,strength,dexterity,constitution,enhancement,attackParts,damageParts,acParts,fullAttack,single,aoo,ac,cmd,brutality,normal:expression(normalMultiplier),critical:expression(critMultiplier),critMultiplier,critBase,furious,warnings,aoos:defense.unconscious?0:1+Math.max(0,dexterity)};
 }
-export function summary(s:State){const c=calculate(s);return `Hapi — ${c.w.name}\nFull attack: ${c.fullAttack.map(signed).join(' / ')}\nSingle${s.charge?' charge':''}: ${signed(c.single)}; AoO: ${signed(c.aoo)}\nDamage: ${c.normal}; critical ${c.w.threat}–20/×${c.critBase}: ${c.critical}\nAC ${c.ac}; CMD ${c.cmd}\nActive: ${(Object.keys(toggleLabels) as Toggle[]).filter(k=>c.s[k]).map(k=>toggleLabels[k]).join(', ')}\nDamage before DR ${s.dr} and incorporeal reductions. Raging Brutality added once; first qualifying attack uses Furious Focus.\n${c.warnings.join('\n')}`;}
+export function summary(s:State){const c=calculate(s);return `Hapi — ${c.w.name}\nFull attack: ${c.fullAttack.map(signed).join(' / ')}\nSingle${s.charge?' charge':''}: ${signed(c.single)}; AoO: ${signed(c.aoo)}\nDamage: ${c.normal}; critical ${c.w.threat}–20/×${c.critBase}: ${c.critical}\nAC ${c.ac}${c.defense.verified?'':' (provisional / incomplete)'} (touch ${c.defense.verified?c.defense.touch:'unverified'}, flat-footed ${c.defense.verified?c.defense.flatFooted:'unverified'}); CMD ${c.cmd}\nHP ${c.defense.currentHP}/${c.defense.maxHP}; temporary HP ${c.defense.tempHP}; death ${c.defense.deathThreshold}\nFort ${signed(c.defense.fortitude)}; Ref ${signed(c.defense.reflex)}; Will ${signed(c.defense.will)}; fear ${signed(c.defense.fear)}\nActive: ${(Object.keys(toggleLabels) as Toggle[]).filter(k=>c.s[k]).map(k=>toggleLabels[k]).join(', ')}\nDamage before DR ${s.dr} and incorporeal reductions. Raging Brutality added once; first qualifying attack uses Furious Focus.\n${c.warnings.join('\n')}`;}

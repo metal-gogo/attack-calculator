@@ -30,7 +30,7 @@ describe('Hapi attack calculator',()=>{
  expect(calc({spirit:true}).s.spirit).toBe(false);expect(calc({weapon:'sun',spirit:true}).enhancement).toBe(4);expect(calc({weapon:'sun',evil:true,spirit:true}).enhancement).toBe(5);
  });
  it('replaces normal flanking with Outflank and conditions Bond on flanking',()=>{
- expect(calc({flanking:true}).single).toBe(42);expect(calc({flanking:true,outflank:true}).single).toBe(44);expect(calc({flanking:true,outflank:true,bond:true}).single).toBe(47);expect(calc({bond:true}).single).toBe(40);
+ expect(calc({flanking:true}).single).toBe(42);expect(calc({flanking:true,outflank:true}).single).toBe(44);expect(calc({flanking:true,outflank:true,bond:true}).single).toBe(46);expect(calc({flanking:true,bond:true}).single).toBe(44);expect(calc({bond:true}).single).toBe(40);
  });
  it('limits charge to the single attack and Paired Opportunists to AoO',()=>{
  const c=calc({charge:true,paired:true});expect(c.single).toBe(42);expect(c.fullAttack).toEqual(calc().fullAttack);expect(c.aoo).toBe(38);expect(c.ac).toBe(28);expect(c.cmd).toBe(45);

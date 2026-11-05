@@ -42,7 +42,7 @@ export function calculate(input:State){
  const wis=character.wis;
  const strength=mod(str),dexterity=mod(dex),constitution=mod(con);
  const enhancement=w.enhancement+(s.weapon==='sun'&&s.evil?2:0)+(s.spirit?Math.min(s.spiritBonus,5-w.enhancement-(s.evil?2:0)):0);
- const attackParts:[string,number][]=[['Strength',strength],['Enhancement / masterwork',s.weapon==='dagger'?1:enhancement],['Weapon Focus + Greater Focus',w.focus],['Heavy Blades training',w.training],['Reckless Abandon',s.reckless?3:0],['Size',s.enlarge?-1:0],['Haste',s.haste?1:0],['Heroism (morale)',s.heroism?2:0],['Charge · charge attack only',s.charge?2:0],['Flanking',s.flanking?(s.outflank?4:2):0],["Freebooter’s Bond · while flanking",s.bond&&s.flanking?3:0],["Freebooter’s Bane",s.bane?s.baneBonus:0]];
+ const attackParts:[string,number][]=[['Strength',strength],['Enhancement / masterwork',s.weapon==='dagger'?1:enhancement],['Weapon Focus + Greater Focus',w.focus],['Heavy Blades training',w.training],['Reckless Abandon',s.reckless?3:0],['Size',s.enlarge?-1:0],['Haste',s.haste?1:0],['Heroism (morale)',s.heroism?2:0],['Charge · charge attack only',s.charge?2:0],['Flanking',s.flanking?(s.outflank?4:2):0],["Freebooter’s Bond · while flanking",s.bond&&s.flanking?2:0],["Freebooter’s Bane",s.bane?s.baneBonus:0]];
  const base=attackParts.reduce((a,[,v])=>a+v,0), penalty=s.power?-6:0;
  // Furious Focus requires a two-handed weapon or a one-handed weapon wielded in two hands.
  const furious=s.power&&w.hands===2;
@@ -69,7 +69,7 @@ export function calculate(input:State){
  if(s.weapon==='dagger'&&s.power)warnings.push('House-rule confirmation: the requested one-handed Power Attack +12 is applied to the dagger. Pathfinder normally excludes light weapons from Power Attack bonus damage; disable Power Attack or confirm this override with your GM.');
 
  if(s.spirit)warnings.push('Warrior Spirit: enhancement only; Heavy Blades training +2 supplies a +2 budget, capped at +5 total. Ability requires activation and daily-use tracking at the table.');
- if(s.bond)warnings.push('Freebooter’s Bond uses your requested +3 while flanking. Confirm this value and ally eligibility with your GM.');
+ if(s.bond)warnings.push('Freebooter’s Bond: +2 attack while flanking with the freebooter or another affected ally. The freebooter activates it as a move action; affected allies must be within 30 feet and able to see or hear the freebooter when granted.');
  if(s.bane)warnings.push('Freebooter’s Bane assumes the designated enemy and ally requirements are met; confirm its bonus with your GM.');
  if(s.incorporeal)warnings.push('Incorporeal target: magical attacks normally deal half damage; the nonmagical dagger normally cannot harm it. Ghost touch and other exceptions require GM adjudication. Shown damage is before this reduction.');
  if(s.charge)warnings.push('Charge applies +2 only to the single charge attack and −2 AC/CMD. The full-attack sequence and AoO exclude its attack bonus.');

@@ -29,7 +29,7 @@ Character and weapon data, combat state, and pure calculations are in `src/calcu
 - Damage expressions precede DR and incorporeal reduction; the interface states the applicable reduction rather than attempting to subtract a constant from an unrolled dice expression. Bypass is a manual GM confirmation. Disruption DC 14 is shown for qualifying undead.
 - Other AC bonuses do not automatically transfer to CMD: enter applicable other CMD bonuses separately. Temporary penalties and Haste dodge are included.
 
-No live combat resources, spell durations, attack rolls, critical confirmations, or ally positioning are tracked automatically.
+Daily rage/spell resources and game-round spell durations are tracked. Attack rolls, critical confirmations, ally positioning, and real-world elapsed time remain table-managed.
 
 ## Publish with GitHub Actions
 
@@ -43,20 +43,20 @@ Default project URL: https://metal-gogo.github.io/attack-calculator/
 
 Permanent character data and equipment are in `src/character.ts`; pure defensive calculations are in `src/defense.ts`. Attack and Defense share the same persisted combat state and ability scores.
 
-Base HP is **251** (corrected): Greater Bloodrage always includes Raging Vitality and yields **331 HP**. The feat has no separate toggle. Damage taken is preserved when maximum HP changes; Constitution-derived HP is never treated as temporary HP. Temporary HP is separately tracked and consumed first by the damage button. Nonlethal damage is tracked separately; stabilization and fatigue duration remain table-managed.
+Confirmed unraged HP is **278**: Greater Bloodrage always includes Raging Vitality and yields **366 HP** at character level 22. No additional level-up Hit Dice or baseline CON HP are generated. The feat has no separate toggle. Damage taken is preserved when maximum HP changes; Constitution-derived HP is never treated as temporary HP. Temporary HP is separately tracked and consumed first by the damage button. Nonlethal damage is tracked separately; stabilization and fatigue duration remain table-managed.
 
-Normal AC is derived from the supplied equipment: full plate +11, Armor Specialization +2, maximum DEX +5, natural armor +3, deflection +5, and shield +3 when equipped and a hand is free. Base AC is **36 without shield / 39 with shield**; base touch AC is **20**. Uncanny Dodge is a reference note; the manual flat-footed control always removes positive DEX and dodge bonuses. Two-handed flail and two-handed Sun Blade suppress the shield; the dagger and one-handed Sun Blade permit it. Overrides remain available. CMD includes applicable components, not armor, shield or natural armor. Armor maximum DEX limits AC/touch AC, not Reflex or CMD.
+Normal AC is derived from the supplied equipment: full plate +11, Armor Specialization +2, maximum DEX +5, natural armor +3, deflection +5, and shield +3 when equipped and a hand is free. Base AC is **37 without shield / 40 with shield** including Dodge; base touch AC is **21**. Uncanny Dodge is a reference note; the manual flat-footed control always removes positive DEX and dodge bonuses. Two-handed flail and two-handed Sun Blade suppress the shield; the dagger and one-handed Sun Blade permit it. Overrides remain available. CMD includes applicable components, not armor, shield or natural armor. Armor maximum DEX limits AC/touch AC, not Reflex or CMD.
 
 The player decides when Uncanny Dodge applies and leaves the flat-footed control off in those cases. Unconsciousness treats DEX as zero. Raging Vitality sustains active Bloodrage while unconscious. Raging Vitality is always active during Bloodrage, including when unconscious; it does not permit actions. Improved Uncanny Dodge provides conditional anti-flanking protection, not a numerical AC bonus. Blood Sanctuary adds +2 only in a qualifying allied/self spell context. Heroism’s +2 morale Will does not stack with Bloodrage’s +3.
 
-Personal DR defaults to Bloodrager 11’s DR 2/— with configurable value/bypass. Resistances and immunities require source-labeled manual confirmation because retained Primalist bloodline powers and equipment were not supplied. No blanket undead immunities are assumed. Greater Ring of Inner Fortitude provides a per-event ability-damage/drain/penalty preview, not a save bonus; select the affected ability and resolve associated beneficial effects (including Enlarge Person) at the table.
+Personal DR defaults to Bloodrager 12’s DR 2/— with configurable value/bypass. Resistances and immunities require source-labeled manual confirmation because retained Primalist bloodline powers and equipment were not supplied. No blanket undead immunities are assumed. Greater Ring of Inner Fortitude provides a per-event ability-damage/drain/penalty preview, not a save bonus; select the affected ability and resolve associated beneficial effects (including Enlarge Person) at the table.
 
 The interface uses larger responsive text, high-contrast cool colors, visible keyboard focus, a skip link, native labeled controls, and text labels alongside active-state colors.
 
 
 ## Equipment records and confirmation
 
-The user confirmed STR 28, DEX 20, CON 26, and WIS 18 **already include** the Belt of Physical Perfection +6 and Headband of Inspired Wisdom +4. Their bonuses are not added again. Base HP 251 includes the baseline Constitution modifier. Additional Seraphel CON and a consumed Manual’s inherent STR are off by default and require confirmation that they are absent from the supplied totals; these are not assumed active worn effects.
+The user confirmed STR 28, DEX 20, CON 26, and WIS 18 **already include** the Belt of Physical Perfection +6 and Headband of Inspired Wisdom +4. Their bonuses are not added again. Confirmed HP 278 includes the baseline Constitution modifier. Additional Seraphel CON and a consumed Manual’s inherent STR are off by default and require confirmation that they are absent from the supplied totals; these are not assumed active worn effects.
 
 Winged Boots have 3 daily uses and a manual active-flight marker (up to 5 minutes/use). Lesser Goggles of True Seeing have 1 recorded use/day; Talisman of Life’s Breath has 2 recorded uses/charges with exact item rules unverified. Counters persist and combat Reset preserves them. Restore uses manually only when the actual item permits. Talisman use never automatically heals or prevents death. Mythallar Token’s recorded skill bonuses do not modify defenses. Leaf Green Faith Bond’s recorded sleep immunity is included while equipped; other properties remain unverified. Darkvision while Bloodraging is displayed without inventing a range or source.
 
@@ -71,7 +71,7 @@ Multiplied damage uses a single weapon damage roll multiplied by the applicable 
 The latest confirmed AC breakdown supersedes the earlier +4 DEX cap: 10 base +11 full plate +5 DEX +3 natural armor +5 deflection +2 Armor Specialization = **36** before combat effects (shield excluded). The effective maximum DEX is configured to +5 per that correction; verify the armor-training source. Older saved default +4 caps migrate to +5, while other manual cap values are preserved.
 
 
-Current AC applies the selected flat-footed condition; normal AC is shown separately for comparison. The flat-footed checkbox manually removes positive DEX/dodge even though Hapi has Uncanny Dodge; a reminder explains that the player should leave it off when the ability applies. Checking it drops base AC from 36 to 31, touch AC from 20 to 15, and CMD from 49 to 44. Baseline CMD is 10 +20 BAB +9 STR +5 DEX +5 deflection =49; Bloodrage plus Reckless Abandon produces47. Armor maximum DEX never limits CMD. Current CMD sources are shown next to the total.
+Current AC applies the selected flat-footed condition; normal AC is shown separately for comparison. The flat-footed checkbox manually removes positive DEX/dodge even though Hapi has Uncanny Dodge; a reminder explains that the player should leave it off when the ability applies. Checking it drops base AC from 37 to 31, touch AC from 21 to 15, and CMD from 52 to 46, including loss of Dodge. Baseline CMD is 10 +22 BAB +9 STR +5 DEX +5 deflection +1 Dodge =52; Bloodrage plus Reckless Abandon produces50. Armor maximum DEX never limits CMD. Current CMD sources are shown next to the total.
 
 
 ## Party HP tracker
@@ -91,4 +91,21 @@ Party health labels use **Bloodied** at half HP or below, **Dying** for negative
 
 Hapi is confirmed evil-aligned. While the Sun Blade is selected, he automatically gains **one negative level**: −1 on attacks (including Haste and AoOs), saving throws, CMB/CMD, skill checks and ability checks; −5 current and maximum HP. The condition cannot be suppressed or removed, including by restoration, while the sword is wielded. Switching to another weapon removes it automatically; damage taken stays unchanged. Wielder alignment is separate from the target’s evil trait.
 
-Ability scores, AC, weapon damage and the base attack progression are not directly reduced. Actual character level remains 20 for Constitution-derived HP; effective level is 19 for applicable level-dependent variables. The UI/summary notes CMB, skills, ability checks, and effective level because those systems are otherwise not calculated here. Hapi’s Defense and linked party HP include the penalty. Alignment defaults to the confirmed evil value, with an explicit wielder setting for later character changes.
+Ability scores, AC, weapon damage and the base attack progression are not directly reduced. Actual character level remains 22 for Constitution-derived HP; effective level is 21 for applicable level-dependent variables. The UI/summary notes ability checks and effective level; CMB and Bluff are calculated with their applicable penalties. Hapi’s Defense and linked party HP include the penalty. Alignment defaults to the confirmed evil value, with an explicit wielder setting for later character changes.
+
+
+## Level 22 update
+
+Hapi is Primalist Bloodrager 12 / Fighter 10: BAB +22/+17/+12/+7, base saves +15/+7/+7, Bravery +3, caster level 12, CHA 14. Bluff is 22 ranks +3 confirmed class skill +2 CHA +2 Hermit =+29 before situational effects; other new skill allocations remain pending. Bloodrage normally prevents Bluff use, but Broken Wing Gambit’s rank prerequisite remains satisfied.
+
+Lunge adds 5 ft on-turn reach and costs −2 AC/CMD until the next turn. Enlarge + Long Arm + Lunge yields 20 ft on-turn reach and 15 ft AoO reach. Dodge adds +1 to AC, touch AC and CMD, lost under the manual flat-footed condition or helplessness. Fearless Rage grants shaken/frightened immunity while raging. Strength Surge is +12 to one selected STR check, CMB, or CMD against a maneuver, an immediate action once per rage; resolve the check to clear the numerical bonus without refunding the use. A new eligible rage refreshes it.
+
+Broken Wing Gambit requires confirming a successful melee hit. Its target gains +2 attack/damage against Hapi through the end of his next turn; qualifying allies can make AoOs if the target attacks Hapi. No AoO or attack bonus is automatically given to Hapi. End-turn / next-turn controls handle duration boundaries. Raging Brutality costs 3 additional rage rounds when activated; its damage effect ends at turn end.
+
+Bloodrager 12 has 2/2/1 base spell slots; CHA 14 adds 1/1/0 for **3/3/1 per day**. Known-spell progression is 6/5/4 plus bloodline spells. Existing unspecified names are not replaced. Returning Weapon (bloodrager 1) lasts 1 minute/CL and requires a throwable weapon; returning is before the wielder’s next turn, not after each attack. Winged Sword (2) grants throwing (10 ft increment) for 10 minutes/CL, not autonomous attacks. Protection from Energy (3) lasts 10 minutes/CL or until its 12 HP/CL pool (max 120) is exhausted; selected-energy damage consumes this pool before temporary HP/ordinary HP. It overlaps Resist Energy instead of stacking both reductions. Other defenses must be resolved separately.
+
+Daily Bloodrage is **34 rounds**: 4 +8 baseline CON modifier +2 per Bloodrager level after first. Temporary raging CON does not add daily rounds. Combat Reset preserves daily slot/rage and equipment-use counters. Daily-recovery buttons are manual and require the actual rest/recovery. Spell durations are stored in game rounds, not wall-clock time, and remain attached to their cast target when weapons change. Sun Blade negative levels affect caster level when a spell is cast; duration counters do not lengthen when that weapon is put away.
+
+The confirmed HP snapshot seeds Wick (Brimwick) at339 and Ty (Tyjeri) at213 without inventing CON scores. Alias matching preserves existing identities. Existing combat current HP, temp HP, nonlethal, equipment settings, and other members survive migration. A progression marker prevents repeated updates or resurrection of deleted party entries. The HP change from251 to278 is the confirmed total, never an additional Hit Dice calculation.
+
+Rules sources used for the new mechanics are linked in [docs/rules.md](docs/rules.md). All rules math is in pure TypeScript modules; `src/storage.ts` and `migratePartyHP` handle versioned snapshots.

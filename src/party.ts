@@ -1,3 +1,4 @@
+import {confirmedPartyHP} from './character';
 export interface HitPoints {damageTaken:number;tempHP:number;nonlethal:number}
 export interface PartyMember extends HitPoints {id:string;name:string;maxHP:number;constitution:number|null}
 export const PARTY_STORAGE='hapi-party-v1';
@@ -31,4 +32,13 @@ export function decodeParty(serialized:string|null):PartyMember[]{
   if(m.nonlethal!==undefined&&(typeof m.nonlethal!=='number'||!Number.isFinite(m.nonlethal)))return false;
   ids.add(m.id);return true;
  }).map(m=>({...m,name:m.name.trim().slice(0,60),maxHP:integer(m.maxHP,1,9999),damageTaken:integer(m.damageTaken,0,99999),tempHP:integer(m.tempHP,0,9999),nonlethal:integer(m.nonlethal??0,0,99999),constitution:typeof m.constitution==='number'&&Number.isFinite(m.constitution)&&m.constitution>0?integer(m.constitution,1,999):null}));
+}
+
+// Apply each confirmed snapshot once. Existing combat HP stays fixed; an unwounded
+// record receives its new full total. Identity, CON and all other members survive.
+export function migratePartyHP(members:PartyMember[],version=0):PartyMember[]{
+ if(version>=1)return members;
+ const next=members.map(m=>{const record=confirmedPartyHP.find(r=>r.aliases.test(m.name));if(!record)return m;const current=currentHP(m);return {...m,maxHP:record.maxHP,damageTaken:(m.damageTaken>0||m.tempHP>0||m.nonlethal>0)?Math.max(0,record.maxHP-current):0};});
+ for(const record of confirmedPartyHP)if(!next.some(m=>record.aliases.test(m.name)))next.push({id:record.id,name:record.name,maxHP:record.maxHP,damageTaken:0,tempHP:0,nonlethal:0,constitution:null});
+ return next;
 }
